@@ -1,0 +1,20 @@
+{
+    "name": "rewbiz-api",
+    "version": "1.0.0",
+    "description": "Proyecto de API para Rewbiz",
+    "main": "app.js",
+    "scripts": {
+      "start": "node app.js"
+    },
+    "dependencies": {
+      "express": "^4.18.2",
+      "mongoose": "^6.0.14",
+      "cors": "^2.8.5",
+      "body-parser": "^1.19.0",
+      "dotenv": "^10.0.0"
+    },
+    "devDependencies": {},
+    "author": "Tu Nombre",
+    "license": "ISC"
+  }
+  
