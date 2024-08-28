@@ -10,7 +10,7 @@ router.post('/save-user', collectionController.saveUser);
 router.post('/update-user', collectionController.updateUser);
 
 // Ruta para get user
-router.get('/user/:email', collectionController.getUserByEmail);
+router.get('/user/:uid', collectionController.getUserByEmail);
 
 // Ruta para generar informe básico
 router.post('/generate-report', collectionController.generateReportWithOpenAI);

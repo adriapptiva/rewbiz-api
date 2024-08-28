@@ -56,7 +56,7 @@ const getUserByEmail = async (req, res) => {
     const db = client.db();
     const usersCollection = db.collection('users');
 
-    const user = await usersCollection.findOne({ email: uid });
+    const user = await usersCollection.findOne({ uid: uid });
 
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
