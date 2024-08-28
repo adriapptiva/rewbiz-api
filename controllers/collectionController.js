@@ -46,7 +46,7 @@ const saveUser = async (req, res) => {
 
 // Get user by Email
 const getUserByEmail = async (req, res) => {
-  const { email } = req.params;
+  const { uid } = req.params;
   let client;
 
   try {
@@ -56,7 +56,7 @@ const getUserByEmail = async (req, res) => {
     const db = client.db();
     const usersCollection = db.collection('users');
 
-    const user = await usersCollection.findOne({ email: email });
+    const user = await usersCollection.findOne({ email: uid });
 
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
