@@ -8,6 +8,10 @@ const saveUser = async (req, res) => {
   const userData = req.body;
   let client;
 
+  if (!userData.username) {
+    userData.username = userData.email || userData.displayName;  // Manejo de username opcional
+  }
+
   try {
     client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -232,7 +236,7 @@ const validateIdNegocio = async (req, res) => {
 
     await client.connect();
     const db = client.db();
-    
+
     // Asumiendo que 'todo_restaurantes_españa' es el nombre correcto de tu colección
     const collection = db.collection('todo_restaurantes_españa');
 
