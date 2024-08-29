@@ -27,5 +27,8 @@ router.get("/nearby-businesses", collectionController.getNearbyBusinesses);
 // Ruta para guardar informes
 router.post('/save-report', collectionController.saveReport);
 
+// Ruta para manejar la autenticación con LinkedIn
+router.post('/linkedin-auth', collectionController.linkedinAuth);
+
 
 module.exports = router;

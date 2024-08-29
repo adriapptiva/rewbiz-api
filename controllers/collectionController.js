@@ -295,6 +295,82 @@ const saveReport = async (req, res) => {
   }
 };
 
+const linkedinClientId = process.env.LINKEDIN_CLIENT_ID;
+const linkedinClientSecret = process.env.LINKEDIN_CLIENT_SECRET;
+
+// Manejar la autenticación con LinkedIn
+const linkedinAuth = async (req, res) => {
+  console.log("LINKEDIN LOGIN")
+  const { code, redirectUri } = req.body;
+  let client;
+
+  try {
+    // Intercambiar el código de autorización por un token de acceso
+    const tokenResponse = await axios.post('https://www.linkedin.com/oauth/v2/accessToken', null, {
+      params: {
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+        client_id: process.env.LINKEDIN_CLIENT_ID,
+        client_secret: process.env.LINKEDIN_CLIENT_SECRET,
+      },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    const { access_token } = tokenResponse.data;
+
+    // Obtener información del usuario de LinkedIn
+    const userInfoResponse = await axios.get('https://api.linkedin.com/v2/me', {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const emailResponse = await axios.get('https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))', {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const userInfo = userInfoResponse.data;
+    const email = emailResponse.data.elements[0]['handle~'].emailAddress;
+
+    // Guardar o actualizar el usuario en la base de datos
+    client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db();
+    const usersCollection = db.collection('users');
+
+    const user = {
+      uid: userInfo.id,
+      email: email || `${userInfo.id}@linkedin.temp`,
+      displayName: `${userInfo.localizedFirstName} ${userInfo.localizedLastName}`,
+      photoURL: userInfo.profilePicture ? userInfo.profilePicture['displayImage~'].elements[0].identifiers[0].identifier : null,
+    };
+
+    // Verificar si el usuario ya existe
+    const existingUser = await usersCollection.findOne({ uid: user.uid });
+
+    if (existingUser) {
+      await usersCollection.updateOne({ uid: user.uid }, { $set: user });
+    } else {
+      await usersCollection.insertOne(user);
+    }
+
+    // Devolver el token y la información del usuario al cliente
+    res.status(200).json({ accessToken: access_token, user });
+  } catch (error) {
+    console.error('Error al autenticar con LinkedIn:', error.message);
+    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+  } finally {
+    if (client) {
+      await client.close();
+    }
+  }
+};
+
 module.exports = {
   saveUser,
   getUserByEmail,
@@ -303,5 +379,6 @@ module.exports = {
   getItemById,
   getNearbyBusinesses,
   validateIdNegocio,
-  saveReport
+  saveReport,
+  linkedinAuth
 };
