@@ -1,6 +1,7 @@
 const { MongoClient, ObjectId } = require('mongodb');
-const axios = require('axios'); // Asegúrate de añadir esta línea
-const url = process.env.MONGODB_URI; // URL de conexión a MongoDB desde tu archivo .env
+const axios = require('axios');
+const url = process.env.MONGODB_URI;
+const Report = require('../models/Report');
 
 
 // Guardar el usuario
@@ -300,7 +301,6 @@ const linkedinClientSecret = process.env.LINKEDIN_CLIENT_SECRET;
 
 // Manejar la autenticación con LinkedIn
 const linkedinAuth = async (req, res) => {
-  console.log("LINKEDIN LOGIN")
   const { code, redirectUri } = req.body;
   let client;
 
@@ -371,6 +371,33 @@ const linkedinAuth = async (req, res) => {
   }
 };
 
+const getReportsByBusinessId = async (req, res) => {
+  const { id_negocio } = req.params;
+  const decodedIdNegocio = decodeURIComponent(id_negocio);
+  let client;
+
+  try {
+    client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db();
+    const informesCollection = db.collection('informes');
+
+    const reports = await informesCollection.find({ id_negocio: decodedIdNegocio }).toArray();
+
+    if (reports.length === 0) {
+      console.log("No se encontraron informes para este id_negocio.");
+      return res.status(404).json({ message: "No se encontraron informes para este id_negocio." });
+    }
+    res.status(200).json(reports);
+  } catch (error) {
+    console.error('Error al obtener los informes solicitados:', error.message);
+    res.status(500).json({ error: 'Internal Server Error', message: 'Error al obtener los informes solicitados' });
+  } finally {
+    await client.close();
+  }
+};
+
+
 module.exports = {
   saveUser,
   getUserByEmail,
@@ -380,5 +407,6 @@ module.exports = {
   getNearbyBusinesses,
   validateIdNegocio,
   saveReport,
-  linkedinAuth
+  linkedinAuth,
+  getReportsByBusinessId
 };

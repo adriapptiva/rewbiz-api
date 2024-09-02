@@ -18,6 +18,9 @@ router.post('/generate-report', collectionController.generateReportWithOpenAI);
 // Ruta para validar el ID de negocio
 router.get('/validate-id-negocio/:id', collectionController.validateIdNegocio);
 
+// Ruta para obtener los reportes solicitados por id_negocio
+router.get('/get-reports/:id_negocio', collectionController.getReportsByBusinessId);
+
 // Ruta para obtener un documento por ID en una colección específica
 router.get("/:collection/:id", collectionController.getItemById);
 
