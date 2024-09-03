@@ -301,6 +301,7 @@ const linkedinClientSecret = process.env.LINKEDIN_CLIENT_SECRET;
 
 // Manejar la autenticación con LinkedIn
 const linkedinAuth = async (req, res) => {
+  console.log("LINKEDIN LOGIN")
   const { code, redirectUri } = req.body;
   let client;
 
